@@ -3,6 +3,8 @@ package paxos.network;
 import paxos.Configuration;
 import paxos.SimpleLogger;
 import paxos.network.messages.Message;
+import paxos.network.messages.Request;
+import paxos.network.messages.Response;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -229,6 +231,30 @@ public class NettyNetwork extends Network {
 					System.exit(1);
 				}
 			}*/
+			if (Message.MSG_TYPE.Request.ordinal() == msg.getType()) { // capture specified client request
+				Request request = (Request) msg;
+				if (Configuration.testIndexA == request.getCIndex()) {  
+					System.out.println("capture " + request);
+					//System.exit(1);
+					Configuration.testIndexA = -1;
+					return;
+				}
+			}
+			if(Message.MSG_TYPE.Response.ordinal() == msg.getType() && !myID.equals(receiver)) { // crash acceptor (!leader)
+				Response response = (Response) msg;
+				if(response.getSlotIndex() == Configuration.testIndexB) {
+					Configuration.testIndexB = -1;
+					System.out.println("capture acceptor " + myID);
+					ClosedChannelException e = new ClosedChannelException();
+					reportError(myID, e);
+					try {
+						Thread.sleep(1000000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+			
 			ChannelFuture f = s.channel.writeAndFlush(msg);
 			f.addListener(s.sendCompleteHandler);
 		}
@@ -316,7 +342,7 @@ public class NettyNetwork extends Network {
 			TimerEvent te = new TimerEvent();
 			while(isRunning){
 				try{
-					Thread.sleep(100);
+					Thread.sleep(1000);
 					events.put(te);
 				}
 				catch(InterruptedException e){

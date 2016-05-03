@@ -18,32 +18,32 @@ import io.netty.buffer.ByteBuf;
  
 public class Accept extends Message {
 
-	private long index;
-	private long proposalID;
+	private Integer slotIndex;
+	private Integer epochId;
 	private Request proposal;
 
 	protected Accept(){}
 	
-	public Accept(NodeIdentifier sender, long index, long proposalID, Request proposal) {
+	public Accept(NodeIdentifier sender, Integer slotIndex, Integer epochId, Request proposal) {
 		super(Message.MSG_TYPE.Accept, sender);
-		this.index = index;
-		this.proposalID = proposalID;
+		this.slotIndex = slotIndex;
+		this.epochId = epochId;
 		this.proposal = proposal;
 	}
 	
 	@Override
 	public void serialize(ByteBuf buf){
 		super.serialize(buf);
-		buf.writeLong(index);
-		buf.writeLong(proposalID);
+		buf.writeInt(slotIndex);
+		buf.writeInt(epochId);
 		proposal.serialize(buf);
 	}
 	
 	@Override
 	public void deserialize(ByteBuf buf){
 		super.deserialize(buf);
-        index = buf.readLong();
-        proposalID = buf.readLong();
+		slotIndex = buf.readInt();
+		epochId = buf.readInt();
         proposal = (Request) Message.deserializeRaw(buf);
 	}
 
@@ -51,9 +51,8 @@ public class Accept extends Message {
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("Accept<src=").append(super.getSender())
-			.append(" index=").append(index).append(">")
-			.append(" Proposal = " + proposal);
-
+			.append(" slotIndex=").append(slotIndex).append(">")
+			.append(" epochId = " + epochId);
 		return sb.toString();
 	}
 	
@@ -61,11 +60,11 @@ public class Accept extends Message {
 		return proposal;
 	}
 
-	public long getIndex(){
-		return index;
+	public Integer getSlotIndex(){
+		return slotIndex;
 	}
 	
-	public long getProposalID() {
-		return proposalID;
+	public Integer getEpochId() {
+		return epochId;
 	}
 }

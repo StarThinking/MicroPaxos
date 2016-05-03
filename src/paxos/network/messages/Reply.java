@@ -7,36 +7,66 @@ import io.netty.buffer.ByteBuf;
  
 public class Reply extends Message {
 
-	private long index;
+	private Integer cIndex;
+	private Integer cmd;
+	public enum CMD_TYPE {
+	    GET, PUT,
+	}
+	private Integer key;
+	private Integer value;
 
 	protected Reply(){}
 	
-	public Reply(NodeIdentifier sender, long index) {
+	public Reply(NodeIdentifier sender, Integer cIndex, Integer cmd, Integer key, Integer value) {
 		super(Message.MSG_TYPE.Reply, sender);
-		this.index = index;
-	}
-	
-	public long getIndex(){
-		return index;
+		this.cIndex = cIndex;
+		this.cmd = cmd;
+		this.key = key;
+		this.value = value;
 	}
 	
 	@Override
 	public void serialize(ByteBuf buf){
 		super.serialize(buf);
-		buf.writeLong(index);
+		buf.writeInt(cIndex);
+		buf.writeInt(cmd);
+		buf.writeInt(key);
+		buf.writeInt(value);
 	}
 	
 	@Override
 	public void deserialize(ByteBuf buf){
 		super.deserialize(buf);
-        index = buf.readLong();
+		cIndex = buf.readInt();
+		cmd = buf.readInt();
+		key = buf.readInt();
+		value = buf.readInt();
 	}
 
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("Reply<src=").append(super.getSender())
-			.append(" index=").append(index).append(">");
+			.append(" cIndex=").append(cIndex).append(">")
+			.append(" cmd = ").append(CMD_TYPE.values()[cmd])
+			.append(" key = ").append(key)
+			.append(" value = ").append(value);
 		return sb.toString();
+	}
+	
+	public Integer getcIndex() {
+		return cIndex;
+	}
+
+	public Integer getCmd() {
+		return cmd;
+	}
+
+	public Integer getKey() {
+		return key;
+	}
+
+	public Integer getValue() {
+		return value;
 	}
 }
